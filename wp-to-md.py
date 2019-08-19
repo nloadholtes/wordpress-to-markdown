@@ -27,13 +27,14 @@ coderegex3 = re.compile(r'\[code lang=[a-zA-Z0-9]*\](.*?)\[\/code\]', re.DOTALL)
 
 class Post:
 
-	def __init__(self, title, link, date, content, category, status):
+	def __init__(self, title, link, date, content, category, status, tags):
 		self.title = title
 		self.link = link
 		self.date = dateutil.parser.parse(date)
 		self.content = content
 		self.category = category
 		self.status = status
+                self.tags = tags
 
 
 def load_doc(filename):
@@ -53,18 +54,20 @@ def parse_doc(doc):
 
 	posts = []
 	attachments = []
-	soup = BeautifulSoup(doc, 'html.parser')
+	soup = BeautifulSoup(doc, 'xml')
 
 	for item in soup.find_all('item'):
 
 		if item.find('wp:post_type').string == "post":
+                        # tags = item.find('post_tag').get('nicename', '') if item.find('post_tag') else ''
 			posts.append(Post(
 				item.find('title').string,
-				item.find('link').string,
+				item.find('link').string.split('/blog')[1] if item.find('link').string else '',
 				item.find('wp:post_date').string,
 				item.find('content:encoded').string,
 				item.find('category')['nicename'],
-				item.find('wp:status').string))
+				item.find('wp:status').string,
+                                item.find('post_tag').get('nicename', '') if item.find('post_tag') else ''))
 
 		elif item.find('wp:post_type').string == "attachment":
 			attachments.append(item.guid.string)
@@ -73,13 +76,13 @@ def parse_doc(doc):
 
 
 def gen_markdown(post):
-
+        import string as str
 	h = html2text.HTML2Text()
 	h.unicode_snob = 1
 	h.body_width = 0
 	h.dash_unordered_list = True
 
-	title = post.title.translate(str.maketrans({"\"": "&#34;", ":": "&#58;"}))
+	title = post.title  # .translate(str.maketrans(["\"", ":"], ["&#34;",  "&#58;"]))
 	body = post.content
 
 	header ="""---
@@ -87,8 +90,10 @@ layout:     post
 title:      "%s"
 date:       %s
 categories: %s
+tags:  %s
+permalink: %s
 ---
-"""%(title, post.date.strftime("%Y-%m-%d %H:%M:%S"), post.category)
+"""%(title, post.date.strftime("%Y-%m-%d %H:%M:%S"), post.category, post.tags, post.link)
 
 	body = re.sub(coderegex1, r"<pre>\1</pre>", body, re.U)
 	body = re.sub(coderegex2, r"<pre>\1</pre>", body, re.U)
