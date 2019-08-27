@@ -27,65 +27,65 @@ coderegex3 = re.compile(r'\[code lang=[a-zA-Z0-9]*\](.*?)\[\/code\]', re.DOTALL)
 
 class Post:
 
-	def __init__(self, title, link, date, content, category, status, tags):
-		self.title = title
-		self.link = link
-		self.date = dateutil.parser.parse(date)
-		self.content = content
-		self.category = category
-		self.status = status
+        def __init__(self, title, link, date, content, category, status, tags):
+                self.title = title
+                self.link = link
+                self.date = dateutil.parser.parse(date)
+                self.content = content
+                self.category = category
+                self.status = status
                 self.tags = tags
 
 
 def load_doc(filename):
 
-	print("> Loading document!")
+        print("> Loading document!")
 
-	doc = ""
-	with io.open(filename, 'r', encoding='UTF-8') as f:
-		doc = f.read()
+        doc = ""
+        with io.open(filename, 'r', encoding='UTF-8') as f:
+                doc = f.read()
 
-	return doc
+        return doc
 
 
 def parse_doc(doc):
 
-	print("> Parsing document!")
+        print("> Parsing document!")
 
-	posts = []
-	attachments = []
-	soup = BeautifulSoup(doc, 'xml')
+        posts = []
+        attachments = []
+        soup = BeautifulSoup(doc, 'xml')
 
-	for item in soup.find_all('item'):
+        for item in soup.find_all('item'):
 
-		if item.find('wp:post_type').string == "post":
+                if item.find('wp:post_type').string == "post":
                         # tags = item.find('post_tag').get('nicename', '') if item.find('post_tag') else ''
-			posts.append(Post(
-				item.find('title').string,
-				item.find('link').string.split('/blog')[1] if item.find('link').string else '',
-				item.find('wp:post_date').string,
-				item.find('content:encoded').string,
-				item.find('category')['nicename'],
-				item.find('wp:status').string,
+                        posts.append(Post(
+                                item.find('title').string,
+                                item.find('link').string.split('/blog')[1] if item.find('link').string else '',
+                                item.find('wp:post_date').string,
+                                item.find('content:encoded').string,
+                                item.find('category')['nicename'],
+                                item.find('wp:status').string,
                                 item.find('post_tag').get('nicename', '') if item.find('post_tag') else ''))
 
-		elif item.find('wp:post_type').string == "attachment":
-			attachments.append(item.guid.string)
+                elif item.find('wp:post_type').string == "attachment":
+                        attachments.append(item.guid.string)
 
-	return posts, attachments
+        return posts, attachments
 
 
 def gen_markdown(post):
         import string as str
-	h = html2text.HTML2Text()
-	h.unicode_snob = 1
-	h.body_width = 0
-	h.dash_unordered_list = True
+        h = html2text.HTML2Text()
+        h.unicode_snob = 1
+        h.body_width = 0
+        h.dash_unordered_list = True
 
-	title = post.title  # .translate(str.maketrans(["\"", ":"], ["&#34;",  "&#58;"]))
-	body = post.content
+        title = post.title  # .translate(str.maketrans(["\"", ":"], ["&#34;",  "&#58;"]))
+        body = post.content
 
-	header ="""---
+        header ="""---
 layout:     post
 title:      "%s"
 date:       %s
@@ -95,72 +95,72 @@ permalink: %s
 ---
 """%(title, post.date.strftime("%Y-%m-%d %H:%M:%S"), post.category, post.tags, post.link)
 
-	body = re.sub(coderegex1, r"<pre>\1</pre>", body, re.U)
-	body = re.sub(coderegex2, r"<pre>\1</pre>", body, re.U)
-	body = re.sub(coderegex3, r"<pre>\1</pre>", body, re.U)
+        body = re.sub(coderegex1, r"<pre>\1</pre>", body, re.U)
+        body = re.sub(coderegex2, r"<pre>\1</pre>", body, re.U)
+        body = re.sub(coderegex3, r"<pre>\1</pre>", body, re.U)
 
-	body = h.handle(body)
+        body = h.handle(body)
 
-	return header + body
+        return header + body
 
 
 def save_posts(output, posts):
 
-	print("> Saving posts!")
+        print("> Saving posts!")
 
-	out = ""
-	directory = ""
+        out = ""
+        directory = ""
 
-	for p in posts:
-		if p.status == "publish":
-			directory = output + "_posts/"
+        for p in posts:
+                if p.status == "publish":
+                        directory = output + "_posts/"
 
-		elif p.status == "draft":
-			directory = output + "_drafts/"
+                elif p.status == "draft":
+                        directory = output + "_drafts/"
 
-		else:
-			directory = output + "_other/"
+                else:
+                        directory = output + "_other/"
 
-		if not os.path.exists(directory):
-			os.makedirs(directory)
+                if not os.path.exists(directory):
+                        os.makedirs(directory)
 
-		output_name = p.date.strftime("%Y-%m-%d") + "-" + slugify(p.title) + ".md"
-		print("Saving", directory + output_name)
-		with io.open(directory + output_name, 'w', encoding='UTF-8') as f:
-			f.write(gen_markdown(p))
+                output_name = p.date.strftime("%Y-%m-%d") + "-" + slugify(p.title) + ".md"
+                print("Saving", directory + output_name)
+                with io.open(directory + output_name, 'w', encoding='UTF-8') as f:
+                        f.write(gen_markdown(p))
 
 
 def download_attachments(output, attachments):
 
-	print("> Wget'ing attachments!")
-	# todo
+        print("> Wget'ing attachments!")
+        # todo
 
 
 def main():
 
-	output = "./"
+        output = "./"
 
-	if len(sys.argv) == 1:
-		print("Parameters: filename for wordpress .xml export file, optional output directory")
-		return
+        if len(sys.argv) == 1:
+                print("Parameters: filename for wordpress .xml export file, optional output directory")
+                return
 
-	elif len(sys.argv) == 2:
-		filename = sys.argv[1]
+        elif len(sys.argv) == 2:
+                filename = sys.argv[1]
 
-	elif len(sys.argv) == 3:
-		filename = sys.argv[1]
-		output = sys.argv[2]
+        elif len(sys.argv) == 3:
+                filename = sys.argv[1]
+                output = sys.argv[2]
 
-	doc = ""
-	posts = []
-	attachments = []
+        doc = ""
+        posts = []
+        attachments = []
 
-	doc = load_doc(filename)
-	posts, attachments = parse_doc(doc)
+        doc = load_doc(filename)
+        posts, attachments = parse_doc(doc)
 
-	save_posts(output, posts)
-	download_attachments(output, attachments)
+        save_posts(output, posts)
+        download_attachments(output, attachments)
 
 
 if __name__ == '__main__':
-	main()
+        main()
