@@ -124,9 +124,9 @@ def save_posts(output, posts):
 		if not os.path.exists(directory):
 			os.makedirs(directory)
 
-		print("Saving", directory + p.date.strftime("%Y-%m-%d") + "-" + slugify(p.title) + ".markdown")
-
-		with io.open(directory + p.date.strftime("%Y-%m-%d") + "-" + slugify(p.title) + ".markdown", 'w', encoding='UTF-8') as f:
+		output_name = p.date.strftime("%Y-%m-%d") + "-" + slugify(p.title) + ".md"
+		print("Saving", directory + output_name)
+		with io.open(directory + output_name, 'w', encoding='UTF-8') as f:
 			f.write(gen_markdown(p))
 
 
