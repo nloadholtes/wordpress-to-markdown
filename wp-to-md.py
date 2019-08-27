@@ -66,10 +66,9 @@ def parse_doc(doc):
                 item.find('category')['nicename'],
                 item.find('wp:status').string,
                 tags,
-                item.find('dc:creator').string
-            )
-		elif item.find('wp:post_type').string == "attachment":
-			attachments.append(item.guid.string)
+                item.find('dc:creator').string))
+        elif item.find('wp:post_type').string == "attachment":
+            attachments.append(item.guid.string)
 
     return posts, attachments
 
@@ -88,7 +87,7 @@ def gen_markdown(post):
 layout:     post
 title:      "%s"
 date:       %s
-author:  %s
+author:     %s
 categories: %s
 tags:  %s
 permalink: %s
