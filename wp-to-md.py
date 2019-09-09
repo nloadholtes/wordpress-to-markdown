@@ -26,7 +26,6 @@ coderegex3 = re.compile(r'\[code lang=[a-zA-Z0-9]*\](.*?)\[\/code\]', re.DOTALL)
 
 
 class Post:
-
     def __init__(self, title, link, date, content, category, status, tags, author):
         self.title = title
         self.link = link
@@ -39,13 +38,10 @@ class Post:
 
 
 def load_doc(filename):
-
     print("> Loading document!")
-
     doc = ""
     with io.open(filename, 'r', encoding='UTF-8') as f:
         doc = f.read()
-
     return doc
 
 
@@ -97,29 +93,23 @@ permalink: %s
     body = re.sub(coderegex1, r"<pre>\1</pre>", body, re.U)
     body = re.sub(coderegex2, r"<pre>\1</pre>", body, re.U)
     body = re.sub(coderegex3, r"<pre>\1</pre>", body, re.U)
-
     body = h.handle(body)
 
     return header + body
 
 
 def save_posts(output, posts):
-
     print("> Saving posts!")
-
     out = ""
     directory = ""
 
     for p in posts:
         if p.status == "publish":
             directory = output + "_posts/"
-
         elif p.status == "draft":
             directory = output + "_drafts/"
-
         else:
             directory = output + "_other/"
-
         if not os.path.exists(directory):
             os.makedirs(directory)
 
@@ -130,22 +120,17 @@ def save_posts(output, posts):
 
 
 def download_attachments(output, attachments):
-
     print("> Wget'ing attachments! -- haha just kidding")
     # todo
 
 
 def main():
-
     output = "./"
-
     if len(sys.argv) == 1:
         print("Parameters: filename for wordpress .xml export file, optional output directory")
         return
-
     elif len(sys.argv) == 2:
         filename = sys.argv[1]
-
     elif len(sys.argv) == 3:
         filename = sys.argv[1]
         output = sys.argv[2]
@@ -153,7 +138,6 @@ def main():
     doc = ""
     posts = []
     attachments = []
-
     doc = load_doc(filename)
     posts, attachments = parse_doc(doc)
 
