@@ -54,7 +54,7 @@ def parse_doc(doc):
     for item in soup.find_all('item'):
         if item.find('wp:post_type').string == "post":
             tags = item.find('post_tag').get('nicename', '') if item.find('post_tag') else ''
-            categories = [c.text for c in item.find_all('category')]
+            categories = [c.text.lower() for c in item.find_all('category')]
             posts.append(Post(
                 item.find('title').string,
                 item.find('link').string.split('/blog')[1] if item.find('link').string else '',
