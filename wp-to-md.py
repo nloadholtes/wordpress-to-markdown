@@ -54,12 +54,13 @@ def parse_doc(doc):
     for item in soup.find_all('item'):
         if item.find('wp:post_type').string == "post":
             tags = item.find('post_tag').get('nicename', '') if item.find('post_tag') else ''
+            categories = [c.text for c in item.find_all('category')]
             posts.append(Post(
                 item.find('title').string,
                 item.find('link').string.split('/blog')[1] if item.find('link').string else '',
                 item.find('wp:post_date').string,
                 item.find('content:encoded').string,
-                item.find('category')['nicename'],
+                categories,
                 item.find('wp:status').string,
                 tags,
                 item.find('dc:creator').string))
@@ -88,7 +89,7 @@ categories: %s
 tags:  %s
 permalink: %s
 ---
-"""%(title, post.date.strftime("%Y-%m-%d %H:%M:%S"), post.author, post.category, post.tags, post.link)
+"""%(title, post.date.strftime("%Y-%m-%d %H:%M:%S"), post.author, ','.join(post.category), post.tags, post.link)
 
     body = re.sub(coderegex1, r"<pre>\1</pre>", body, re.U)
     body = re.sub(coderegex2, r"<pre>\1</pre>", body, re.U)
